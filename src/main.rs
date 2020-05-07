@@ -63,8 +63,8 @@ fn main() {
     let width = 200;
     let height = 100;
 
-    let hw = 50;
-    let hh = 25;
+    let hw = width / 4;
+    let hh = height / 2;
     
     let samples_per_pixel = 75;
     let max_depth = 50;
@@ -81,7 +81,7 @@ fn main() {
     let imgbuf = Arc::from(Mutex::from(image::RgbImage::new(width, height)));
 
     let mut threads = Vec::new();
-    for i in 0..4 {
+    for i in 0..2 {
         for j in 0..4 {
             let img = imgbuf.clone();
             let cam = cam_shared.clone();
