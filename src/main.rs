@@ -17,7 +17,9 @@ use physics::{
     Camera
 };
 
+
 use model::Sphere;
+
 
 use std::{
     f64::INFINITY,
@@ -65,29 +67,62 @@ fn main() {
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
-    world.add(Rc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
-    world.add(Rc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
+    world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
+    world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
 
-    let cam = Camera::new();
+    let mut world_shared = Arc::from(world);
 
-    let mut imgbuf = image::ImageBuffer::new(width, height);
-    for (x, y, pix) in imgbuf.enumerate_pixels_mut() {
-        if ANTI_ALIASING_ENABLED {
-            let mut pixcolor = Vector3::new();
-            for _ in 0..samples_per_pixel {
-                let u = (x as f64 + rand::random::<f64>()) / width as f64;
-                let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
-                let ray = cam.get_ray(u, v);
-                pixcolor += ray_color(&ray, &world, max_depth);
+    let mut cam_shared = Arc::from(Camera::new());
+
+    let mut imgbuf = Arc::from(image::RgbImage::new(width, height));
+
+    let mut i = imgbuf.clone();
+    let mut c = cam_shared.clone();
+    let mut w = world_shared.clone();
+
+    let left = std::thread::spawn(move || {
+        let mut img = Arc::make_mut(&mut i);
+        let cam = c.clone();
+        let world = w.clone();
+        for y in (0..height).rev() {
+            for x in 0..(width/2) {
+                let mut pixcolor = Vector3::new();
+                for _ in 0..samples_per_pixel {
+                    let u = (x as f64 + rand::random::<f64>()) / width as f64;
+                    let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
+                    let ray = cam.get_ray(u, v);
+                    pixcolor += ray_color(&ray, &world, max_depth);
+                }
+                img.put_pixel(x, y, pixcolor.into_rgb());
             }
-            *pix = write_color(pixcolor, samples_per_pixel);
-        } else {
-            let u = x as f64 / width as f64;
-            let v = (height - y) as f64 / height as f64;
-            let ray = cam.get_ray(u, v);
-            *pix = ray_color(&ray, &world, max_depth).into_rgb();
         }
-    }
+    });
+
+    let mut i = imgbuf.clone();
+    let c = cam_shared.clone();
+    let w = world_shared.clone();
+
+    let right = std::thread::spawn(move || {
+        let mut img = Arc::make_mut(&mut i);
+        let cam = c.clone();
+        let world = w.clone();
+        for y in (0..height).rev() {
+            for x in (width/2)..width {
+                let mut pixcolor = Vector3::new();
+                for _ in 0..samples_per_pixel {
+                    let u = (x as f64 + rand::random::<f64>()) / width as f64;
+                    let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
+                    let ray = cam.get_ray(u, v);
+                    pixcolor += ray_color(&ray, &world, max_depth);
+                }
+                img.put_pixel(x, y, pixcolor.into_rgb());
+            }
+        }
+    });
+
+    left.join().unwrap();
+    right.join().unwrap();
+
 
     imgbuf.save("test.png").unwrap();
 }

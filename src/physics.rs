@@ -3,6 +3,7 @@ use std::{
         Range,
     },
     rc::Rc,
+    sync::Arc,
 };
 
 use crate::rmath::Vector3;
@@ -52,12 +53,13 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_range: Range<f64>, hit_record: &mut HitRecord) -> bool;
 }
 
+#[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>
+    objects: Vec<Arc<dyn Hittable>>
 }
 
 impl HittableList {
@@ -67,7 +69,7 @@ impl HittableList {
         }
     }
 
-    pub fn add(&mut self, obj: Rc<dyn Hittable>) {
+    pub fn add(&mut self, obj: Arc<dyn Hittable>) {
         self.objects.push(obj)
     }
 
@@ -92,6 +94,7 @@ impl Hittable for HittableList {
     }
 }
 
+#[derive(Clone)]
 pub struct Camera {
     origin: Vector3,
     low_left_corner: Vector3,

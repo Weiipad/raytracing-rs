@@ -9,7 +9,6 @@ use crate::{
 
 use std::ops::Range;
 
-
 pub struct Sphere {
     center: Vector3,
     r: f64
