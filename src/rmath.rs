@@ -44,8 +44,21 @@ impl Vector3 {
         Vector3(0.0, 0.0, 0.0)
     }
 
-    pub fn from_other(other: Vector3) -> Self {
-        Vector3(other.0, other.1, other.2)
+    pub fn from_random() -> Self {
+        Vector3(rand::random::<f64>(), rand::random::<f64>(), rand::random::<f64>())
+    }
+
+    pub fn from_interval_random(i: Range<f64>) -> Self {
+        Vector3(random_interval(i.clone()), random_interval(i.clone()), random_interval(i.clone()))
+    }
+
+    pub fn from_random_in_unit_sphere() -> Self {
+        loop {
+            let candi = Vector3::from_random();
+            if candi.length_square() <= 1.0 {
+                return candi
+            }
+        }
     }
 
     pub fn x(&self) -> f64 {
@@ -73,7 +86,7 @@ impl Vector3 {
     }
 
     pub fn unit(&self) -> Self {
-        Vector3::from_other(*self / self.length())
+        *self / self.length()
     }
 
     pub fn to_string(&self) -> String {
