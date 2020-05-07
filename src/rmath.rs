@@ -8,7 +8,10 @@ use std::ops::{
     MulAssign,
     Div,
     DivAssign,
+    Range,
 };
+
+use rand::Rng;
 
 pub fn deg_to_rad(deg: f64) -> f64 {
     deg * std::f64::consts::PI / 180.0
@@ -16,6 +19,21 @@ pub fn deg_to_rad(deg: f64) -> f64 {
 
 pub fn rad_to_deg(rad: f64) -> f64 {
     rad * 180.0 / std::f64::consts::PI
+}
+
+pub fn random_interval(interval: Range<f64>) -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(interval.start, interval.end)
+}
+
+pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
+    if x > max {
+        max
+    } else if x < min {
+        min
+    } else {
+        x
+    }
 }
 
 #[derive(Copy, Clone, Default)]
@@ -71,7 +89,7 @@ impl Vector3 {
     }
 
     pub fn into_rgb(self) -> image::Rgb<u8> {
-        image::Rgb([(self.0 * 255.999) as u8, (self.1 * 255.999) as u8, (self.2 * 255.999) as u8])
+        image::Rgb([(self.0 * 256.0) as u8, (self.1 * 256.0) as u8, (self.2 * 256.0) as u8])
     }
 }
 

@@ -91,3 +91,25 @@ impl Hittable for HittableList {
         hits_anything
     }
 }
+
+pub struct Camera {
+    origin: Vector3,
+    low_left_corner: Vector3,
+    horizontal: Vector3,
+    vertical: Vector3
+}
+
+impl Camera {
+    pub fn new() -> Self {
+        Self {
+            origin: Vector3(0.0, 0.0, 0.0),
+            low_left_corner: Vector3(-2.0, -1.0, -1.0),
+            horizontal: Vector3(4.0, 0.0, 0.0),
+            vertical: Vector3(0.0, 2.0, 0.0)
+        }
+    }
+
+    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        Ray::new(self.origin, self.low_left_corner + u * self.horizontal + v * self.vertical - self.origin)
+    }
+}
