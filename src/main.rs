@@ -24,10 +24,13 @@ use model::Sphere;
 use std::{
     f64::INFINITY,
     rc::Rc,
-    sync::Arc,
+    sync::{
+        Arc,
+        Mutex
+    },
 };
 
-fn write_color(pixcolor: Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
+fn write_color(pixcolor: &Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
     let mut r = pixcolor.x();
     let mut g = pixcolor.y();
     let mut b = pixcolor.z();
@@ -55,12 +58,13 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
     (1.0 - t) * Vector3(1.0, 1.0, 1.0) + t * Vector3(0.5, 0.7, 1.0)
 }
 
-const ANTI_ALIASING_ENABLED: bool = true;
-
 fn main() {
     let ratio = 2.0;
     let width = 200;
-    let height = (width as f64/ ratio) as u32;
+    let height = 100;
+
+    let hw = 50;
+    let hh = 25;
     
     let samples_per_pixel = 75;
     let max_depth = 50;
@@ -70,59 +74,41 @@ fn main() {
     world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
     world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
 
-    let mut world_shared = Arc::from(world);
+    let world_shared = Arc::from(world);
 
-    let mut cam_shared = Arc::from(Camera::new());
+    let cam_shared = Arc::from(Camera::new());
 
-    let mut imgbuf = Arc::from(image::RgbImage::new(width, height));
+    let imgbuf = Arc::from(Mutex::from(image::RgbImage::new(width, height)));
 
-    let mut i = imgbuf.clone();
-    let mut c = cam_shared.clone();
-    let mut w = world_shared.clone();
-
-    let left = std::thread::spawn(move || {
-        let mut img = Arc::make_mut(&mut i);
-        let cam = c.clone();
-        let world = w.clone();
-        for y in (0..height).rev() {
-            for x in 0..(width/2) {
-                let mut pixcolor = Vector3::new();
-                for _ in 0..samples_per_pixel {
-                    let u = (x as f64 + rand::random::<f64>()) / width as f64;
-                    let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
-                    let ray = cam.get_ray(u, v);
-                    pixcolor += ray_color(&ray, &world, max_depth);
+    let mut threads = Vec::new();
+    for i in 0..4 {
+        for j in 0..4 {
+            let img = imgbuf.clone();
+            let cam = cam_shared.clone();
+            let world = world_shared.clone();
+            let handle = std::thread::spawn(move || {    
+                for y in i*hh..(i+1)*hh {
+                    for x in j*hw..(j+1)*hw {
+                        let mut pixcolor = Vector3::new();
+                        for _ in 0..samples_per_pixel {
+                            let u = (x as f64 + rand::random::<f64>()) / width as f64;
+                            let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
+                            let ray = cam.get_ray(u, v);
+                            pixcolor += ray_color(&ray, &world, max_depth);
+                        }
+                        let mut img = img.lock().unwrap();
+                        img.put_pixel(x, y, write_color(&pixcolor, samples_per_pixel));
+                    }
                 }
-                img.put_pixel(x, y, pixcolor.into_rgb());
-            }
+            });
+            threads.push(handle);
         }
-    });
+    }
 
-    let mut i = imgbuf.clone();
-    let c = cam_shared.clone();
-    let w = world_shared.clone();
-
-    let right = std::thread::spawn(move || {
-        let mut img = Arc::make_mut(&mut i);
-        let cam = c.clone();
-        let world = w.clone();
-        for y in (0..height).rev() {
-            for x in (width/2)..width {
-                let mut pixcolor = Vector3::new();
-                for _ in 0..samples_per_pixel {
-                    let u = (x as f64 + rand::random::<f64>()) / width as f64;
-                    let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
-                    let ray = cam.get_ray(u, v);
-                    pixcolor += ray_color(&ray, &world, max_depth);
-                }
-                img.put_pixel(x, y, pixcolor.into_rgb());
-            }
-        }
-    });
-
-    left.join().unwrap();
-    right.join().unwrap();
+    for h in threads {
+        h.join().unwrap();
+    }
 
 
-    imgbuf.save("test.png").unwrap();
+    imgbuf.lock().unwrap().save("test.png").unwrap();
 }

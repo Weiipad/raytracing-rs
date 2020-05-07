@@ -84,7 +84,7 @@ impl Hittable for HittableList {
         let mut hits_anything = false;
         let mut closet_so_far = t_range.end;
         for object in &self.objects {
-            if object.hit(r, t_range.start..t_range.end, &mut temp_rec) {
+            if object.hit(r, t_range.start..closet_so_far, &mut temp_rec) {
                 hits_anything = true;
                 closet_so_far = temp_rec.t;
                 *rec = temp_rec;
