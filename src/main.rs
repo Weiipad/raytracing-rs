@@ -19,7 +19,7 @@ use physics::{
 };
 
 
-use model::Sphere;
+use model::{Sphere, Plane};
 
 
 use std::{
@@ -50,7 +50,7 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
 
     let mut rec: HitRecord = Default::default();
     if world.hit(r, 0.001..INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + Vector3::from_random_unit();
+        let target = rec.p + rec.normal + Vector3::from_random_in_unit_sphere();
         return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)
     }
     let unit_dir = r.get_direction().unit();
@@ -70,7 +70,8 @@ fn main() {
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
-    world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
+    //world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
+    world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 1.1)));
     world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
 
     let world_shared = Arc::from(world);

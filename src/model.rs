@@ -47,3 +47,31 @@ impl Hittable for Sphere {
         false
     }
 }
+
+pub struct Plane {
+    normal: Vector3,
+    offset: f64
+}
+
+impl Plane {
+    pub fn new(normal: Vector3, offset: f64) -> Self {
+        Plane {
+            normal, offset
+        }
+    }
+}
+
+impl Hittable for Plane {
+    fn hit(&self, r: &Ray, t_range: Range<f64>, rec: &mut HitRecord) -> bool {
+        let t = (-self.offset - r.get_origin().dot(self.normal)) / r.get_direction().dot(self.normal);
+        if t_range.contains(&t) {
+            rec.t = t;
+            rec.p = r.at(t);
+            rec.normal = self.normal;
+            true
+        } else {
+            false
+        }
+        
+    }
+}
