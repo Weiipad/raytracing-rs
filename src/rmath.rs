@@ -21,6 +21,10 @@ pub fn rad_to_deg(rad: f64) -> f64 {
     rad * 180.0 / std::f64::consts::PI
 }
 
+pub fn random_double() -> f64 {
+    rand::random::<f64>()
+}
+
 pub fn random_interval(interval: Range<f64>) -> f64 {
     let mut rng = rand::thread_rng();
     rng.gen_range(interval.start, interval.end)
@@ -45,7 +49,7 @@ impl Vector3 {
     }
 
     pub fn from_random() -> Self {
-        Vector3(rand::random::<f64>(), rand::random::<f64>(), rand::random::<f64>())
+        Vector3(random_double(), random_double(), random_double())
     }
 
     pub fn from_interval_random(i: Range<f64>) -> Self {

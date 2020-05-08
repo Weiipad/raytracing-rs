@@ -7,6 +7,7 @@ mod model;
 use rmath::{
     clamp,
     Vector3,
+    random_double,
 };
 
 use physics::{
@@ -23,7 +24,6 @@ use model::Sphere;
 
 use std::{
     f64::INFINITY,
-    rc::Rc,
     sync::{
         Arc,
         Mutex
@@ -90,8 +90,8 @@ fn main() {
                     for x in j*hw..(j+1)*hw {
                         let mut pixcolor = Vector3::new();
                         for _ in 0..samples_per_pixel {
-                            let u = (x as f64 + rand::random::<f64>()) / width as f64;
-                            let v = ((height - y) as f64 + rand::random::<f64>())/ height as f64;
+                            let u = (x as f64 + random_double()) / width as f64;
+                            let v = ((height - y) as f64 + random_double())/ height as f64;
                             let ray = cam.get_ray(u, v);
                             pixcolor += ray_color(&ray, &world, max_depth);
                         }
