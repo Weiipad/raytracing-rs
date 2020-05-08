@@ -36,9 +36,9 @@ fn write_color(pixcolor: &Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
     let mut b = pixcolor.z();
 
     let scale = 1.0 / samples_per_pixel as f64;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = f64::sqrt(r * scale);
+    g = f64::sqrt(g * scale);
+    b = f64::sqrt(b * scale);
 
     Vector3(clamp(r, 0.0, 0.999), clamp(g, 0.0, 0.999), clamp(b, 0.0, 0.999)).into_rgb()
 }
@@ -49,9 +49,9 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
     }
 
     let mut rec: HitRecord = Default::default();
-    if world.hit(r, 0.0..INFINITY, &mut rec) {
+    if world.hit(r, 0.001..INFINITY, &mut rec) {
         let target = rec.p + rec.normal + Vector3::from_random_in_unit_sphere();
-        return ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)
+        return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)
     }
     let unit_dir = r.get_direction().unit();
     let t = 0.5 * (unit_dir.y() + 1.0);
@@ -59,14 +59,13 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
 }
 
 fn main() {
-    let ratio = 2.0;
-    let width = 200;
-    let height = 100;
+    let width = 384;
+    let height = 192;
 
     let hw = width / 4;
     let hh = height / 2;
     
-    let samples_per_pixel = 75;
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
