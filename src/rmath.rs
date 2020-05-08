@@ -11,6 +11,8 @@ use std::ops::{
     Range,
 };
 
+use std::f64::consts::PI;
+
 use rand::Rng;
 
 pub fn deg_to_rad(deg: f64) -> f64 {
@@ -63,6 +65,13 @@ impl Vector3 {
                 return candi
             }
         }
+    }
+
+    pub fn from_random_unit() -> Self {
+        let a = random_interval(0.0..2.0 * PI);
+        let z = random_interval(0.0..1.0);
+        let r = f64::sqrt(1.0 - z*z);
+        Vector3(r * f64::cos(a), r * f64::sin(a), z)
     }
 
     pub fn x(&self) -> f64 {

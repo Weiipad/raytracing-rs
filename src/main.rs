@@ -50,7 +50,7 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
 
     let mut rec: HitRecord = Default::default();
     if world.hit(r, 0.001..INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + Vector3::from_random_in_unit_sphere();
+        let target = rec.p + rec.normal + Vector3::from_random_unit();
         return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)
     }
     let unit_dir = r.get_direction().unit();
