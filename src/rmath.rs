@@ -46,7 +46,7 @@ pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
 pub struct Vector3(pub f64, pub f64, pub f64);
 
 impl Vector3 {
-    pub fn new() -> Self {
+    pub fn zero() -> Self {
         Vector3(0.0, 0.0, 0.0)
     }
 
@@ -94,8 +94,12 @@ impl Vector3 {
         f64::sqrt(self.length_square())
     }
 
-    pub fn dot(self, other: Vector3) -> f64 {
+    pub fn dot(&self, other: Vector3) -> f64 {
         self.x() * other.x() + self.y() * other.y() + self.z() * other.z()
+    }
+
+    pub fn mul_one_by_one(&self, other: Vector3) -> Vector3 {
+        Vector3(self.0 * other.0, self.1 * other.1, self.2 * other.2)
     }
 
     pub fn unit(&self) -> Self {
@@ -165,6 +169,7 @@ impl Sub for Vector3 {
     }
 }
 
+// let the * operator represents cross product
 impl Mul for Vector3 {
     type Output = Vector3;
     fn mul(self, rhs: Vector3) -> Vector3 {

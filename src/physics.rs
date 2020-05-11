@@ -32,25 +32,16 @@ impl Ray {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Vector3,
     pub t: f64,
     pub front_face: bool,
     pub normal: Vector3,
+    pub mat_ptr: Arc<dyn Material>,
 }
 
 impl HitRecord {
-    #[inline]
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vector3) {
-        self.front_face = r.get_direction().dot(outward_normal) < 0.0;
-        self.normal = if self.front_face {
-            outward_normal
-        } else {
-            -outward_normal
-        }
-    }
-
     #[inline]
     pub fn get_face_normal(r: &Ray, outward_normal: Vector3) -> (bool, Vector3) {
         let front_face = r.get_direction().dot(outward_normal) < 0.0;
@@ -65,10 +56,6 @@ impl HitRecord {
 
 pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord>;
-}
-
-pub trait Material {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool;
 }
 
 #[derive(Clone)]
@@ -99,6 +86,29 @@ impl Hittable for HittableList {
             }
         }
         rec
+    }
+}
+
+pub trait Material: Send + Sync {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3 /* attenuation */, Ray /* scatter */)>;
+}
+
+pub struct Lambertian {
+    albedo: Vector3
+}
+
+impl Lambertian {
+    pub fn new(color: Vector3) -> Self {
+        Self {
+            albedo: color
+        }
+    }
+}
+
+impl Material for Lambertian {
+    fn scatter(&self, _: &Ray, rec: &HitRecord) -> Option<(Vector3, Ray)> {
+        let scatter_direction = rec.normal + Vector3::from_random_unit();
+        Some((self.albedo, Ray::new(rec.p, scatter_direction)))
     }
 }
 

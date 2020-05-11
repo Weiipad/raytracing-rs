@@ -13,8 +13,8 @@ use rmath::{
 use physics::{
     Ray,
     HittableList,
-    HitRecord,
     Hittable,
+    Lambertian,
     Camera
 };
 
@@ -45,12 +45,14 @@ fn write_color(pixcolor: &Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
 
 fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
     if depth <= 0 {
-        return Vector3(0.0, 0.0, 0.0)
+        return Vector3::zero()
     }
-    
+
     if let Some(rec) = world.hit(r, 0.001..INFINITY) {
-        let target = rec.p + rec.normal + Vector3::from_random_in_unit_sphere();
-        return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)
+        if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec) {
+            return attenuation.mul_one_by_one(ray_color(&scattered, world, depth - 1))
+        }
+        return Vector3::zero()
     }
     let unit_dir = r.get_direction().unit();
     let t = 0.5 * (unit_dir.y() + 1.0);
@@ -69,9 +71,9 @@ fn main() {
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
-    //world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
-    world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 0.5)));
-    world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
+    world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0))) )));
+    //world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 0.5, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0))) )));
+    world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3))) )));
 
     let world_shared = Arc::from(world);
 
@@ -88,7 +90,7 @@ fn main() {
             let handle = std::thread::spawn(move || {    
                 for y in i*hh..(i+1)*hh {
                     for x in j*hw..(j+1)*hw {
-                        let mut pixcolor = Vector3::new();
+                        let mut pixcolor = Vector3::zero();
                         for _ in 0..samples_per_pixel {
                             let u = (x as f64 + random_double()) / width as f64;
                             let v = ((height - y) as f64 + random_double())/ height as f64;
