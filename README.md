@@ -1,6 +1,7 @@
 # Ray Tracing in Rust
 -----------------------
 这是我学习[Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)时所使用的仓库
+渲染出的图片都在achievements里。
 
 ## 我擅作主张，修改得和原书不一样的部分：
 
