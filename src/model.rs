@@ -1,8 +1,10 @@
 use crate::{
     physics::{
+        material::{
+            Material,
+        },
         Ray,
         Hittable,
-        Material,
         HitRecord
     },
     rmath::Vector3,

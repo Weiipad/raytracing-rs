@@ -102,6 +102,10 @@ impl Vector3 {
         Vector3(self.0 * other.0, self.1 * other.1, self.2 * other.2)
     }
 
+    pub fn reflect(&self, normal: Vector3) -> Vector3 {
+        *self - 2.0 * self.dot(normal) * normal
+    }
+
     pub fn unit(&self) -> Self {
         *self / self.length()
     }

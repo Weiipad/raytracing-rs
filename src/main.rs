@@ -11,11 +11,14 @@ use rmath::{
 };
 
 use physics::{
+    material::{
+        Lambertian,
+        Metal
+    },
     Ray,
     HittableList,
     Hittable,
-    Lambertian,
-    Camera
+    Camera,
 };
 
 
@@ -43,6 +46,7 @@ fn write_color(pixcolor: &Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
     Vector3(clamp(r, 0.0, 0.999), clamp(g, 0.0, 0.999), clamp(b, 0.0, 0.999)).into_rgb()
 }
 
+// every elements in color vector are in [0, 1]
 fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
     if depth <= 0 {
         return Vector3::zero()
@@ -71,9 +75,10 @@ fn main() {
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
-    world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0))) )));
-    //world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 0.5, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0))) )));
-    world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3))) )));
+    //world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), 1.0, Arc::from(Lambertian::new(Vector3(0.5, 0.5, 0.5)))) ));
+    world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
+    world.add(Arc::from( Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3)))) ));
+    world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3(0.9, 0.9, 0.9)))) ));
 
     let world_shared = Arc::from(world);
 
