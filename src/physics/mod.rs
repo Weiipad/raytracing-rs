@@ -18,8 +18,16 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vector3, direction: Vector3) -> Self {
-        Ray {
+        Self {
             origin, direction
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn from_two_points(p1: Vector3, p2: Vector3) -> Self {
+        Self {
+            origin: p1,
+            direction: p2 - p1
         }
     }
 
@@ -90,29 +98,5 @@ impl Hittable for HittableList {
             }
         }
         rec
-    }
-}
-
-
-#[derive(Clone)]
-pub struct Camera {
-    origin: Vector3,
-    low_left_corner: Vector3,
-    horizontal: Vector3,
-    vertical: Vector3
-}
-
-impl Camera {
-    pub fn new() -> Self {
-        Self {
-            origin: Vector3(0.0, 0.0, 0.0),
-            low_left_corner: Vector3(-2.0, -1.0, -1.0),
-            horizontal: Vector3(4.0, 0.0, 0.0),
-            vertical: Vector3(0.0, 2.0, 0.0)
-        }
-    }
-
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
-        Ray::new(self.origin, self.low_left_corner + u * self.horizontal + v * self.vertical - self.origin)
     }
 }

@@ -55,24 +55,27 @@ impl Hittable for Sphere {
 
 pub struct Plane {
     normal: Vector3,
-    offset: f64,
+    oc: f64,
     mat_ptr: Arc<dyn Material>
 }
 
 impl Plane {
     #[allow(dead_code)]
-    pub fn new(normal: Vector3, offset: f64, material: Arc<dyn Material>) -> Self {
+    pub fn new(normal: Vector3, point: Vector3, material: Arc<dyn Material>) -> Self {
         Plane {
-            normal, offset, mat_ptr: material.clone()
+            normal, 
+            oc: point.dot(normal), 
+            mat_ptr: material.clone()
         }
     }
 }
 
 impl Hittable for Plane {
     fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord> {
-        let t = (-self.offset - r.get_origin().dot(self.normal)) / r.get_direction().dot(self.normal);
+        let t = (self.oc - r.get_origin().dot(self.normal)) / r.get_direction().dot(self.normal);
+        let p = r.at(t);
         if t_range.contains(&t) {
-            Some(HitRecord { p: r.at(t), t, front_face: true, normal: self.normal, mat_ptr: self.mat_ptr.clone() })
+            Some(HitRecord { p, t, front_face: true, normal: self.normal, mat_ptr: self.mat_ptr.clone() })
         } else {
             None
         }

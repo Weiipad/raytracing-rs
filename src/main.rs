@@ -7,6 +7,7 @@ mod model;
 use rmath::{
     clamp,
     Vector3,
+    Camera,
     random_double,
 };
 
@@ -18,7 +19,7 @@ use physics::{
     Ray,
     HittableList,
     Hittable,
-    Camera,
+    
 };
 
 
@@ -64,28 +65,27 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
 }
 
 fn main() {
-    let ratio = 1.0 / 2.0;
+    let ratio = 2.0 / 1.0;
     // You can change the resolution of picture here (don't edit the ratio).
     let width = 384;
-    let height = (width as f64 * ratio) as u32;
+    let height = (width as f64 / ratio) as u32;
 
     let hw = width / 4;
     let hh = height / 4;
     
     let samples_per_pixel = 100;
-    let max_depth = 10;
+    let max_depth = 100;
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
-    //world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), 1.0, Arc::from(Lambertian::new(Vector3(0.5, 0.5, 0.5)))) ));
-    world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
+    world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), -Vector3(0.0, 0.5, 0.0), Arc::from(Metal::new(Vector3::new(0.5), 0.2))) ));
+    //world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3)))) ));
     world.add(Arc::from( Sphere::new(Vector3(-1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3(0.8, 0.6, 0.2), 0.8))) ));
     world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3::new(0.8), 0.0))) ));
-
     let world_shared = Arc::from(world);
 
-    let cam_shared = Arc::from(Camera::new());
+    let cam_shared = Arc::from(Camera::new(Vector3(-2.0, 2.0, 1.0), Vector3(0.0, 0.0, -1.0), Vector3(0.0, 1.0, 0.0), 45.0, ratio));
 
     let imgbuf = Arc::from(Mutex::from(image::RgbImage::new(width, height)));
 
@@ -112,7 +112,7 @@ fn main() {
                     }
                 }
             });
-            threads.push(handle);
+            threads.push(handle)
         }
     }
 
@@ -120,7 +120,7 @@ fn main() {
         h.join().unwrap();
     }
     
-    println!("Time elapsed: {:?}", start_time.elapsed().unwrap());
+    println!("Time elapsed: {:?}", start_time.elapsed().unwrap_or_default());
 
     imgbuf.lock().unwrap().save("test.png").unwrap();
 }

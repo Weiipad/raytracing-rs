@@ -15,7 +15,8 @@ use std::f64::consts::PI;
 
 use rand::Rng;
 
-#[allow(dead_code)]
+use crate::physics::Ray;
+
 pub fn deg_to_rad(deg: f64) -> f64 {
     deg * std::f64::consts::PI / 180.0
 }
@@ -221,5 +222,36 @@ impl Neg for Vector3 {
     type Output = Vector3;
     fn neg(self) -> Vector3 {
         Vector3(-self.0, -self.1, -self.2)
+    }
+}
+
+#[derive(Clone)]
+pub struct Camera {
+    origin: Vector3,
+    low_left_corner: Vector3,
+    horizontal: Vector3,
+    vertical: Vector3
+}
+
+impl Camera {
+    pub fn new(lookfrom: Vector3, lookat: Vector3, vup: Vector3, vfov: f64, aspect_ratio: f64) -> Self {
+        let theta = deg_to_rad(vfov);
+        let half_height = f64::tan(theta / 2.0);
+        let half_width = aspect_ratio * half_height;
+
+        let w = (lookfrom - lookat).unit();
+        let u = (vup * w).unit();
+        let v = w * u;
+
+        Self {
+            origin: lookfrom,
+            low_left_corner: lookfrom - half_width*u - half_height*v - w,
+            horizontal: 2.0 * half_width * u,
+            vertical: 2.0 * half_height * v
+        }
+    }
+
+    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        Ray::new(self.origin, self.low_left_corner + u * self.horizontal + v * self.vertical - self.origin)
     }
 }
