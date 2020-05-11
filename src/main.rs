@@ -64,8 +64,10 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
 }
 
 fn main() {
+    let ratio = 1.0 / 2.0;
+    // You can change the resolution of picture here (don't edit the ratio).
     let width = 384;
-    let height = 192;
+    let height = (width as f64 * ratio) as u32;
 
     let hw = width / 4;
     let hh = height / 2;
@@ -78,7 +80,7 @@ fn main() {
     //world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), 1.0, Arc::from(Lambertian::new(Vector3(0.5, 0.5, 0.5)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3)))) ));
-    world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3(0.9, 0.9, 0.9)))) ));
+    world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3::new(0.5)))) ));
 
     let world_shared = Arc::from(world);
 

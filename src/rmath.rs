@@ -46,21 +46,25 @@ pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
 pub struct Vector3(pub f64, pub f64, pub f64);
 
 impl Vector3 {
+    pub fn new(s: f64) -> Self {
+        Self(s, s, s)
+    }
+
     pub fn zero() -> Self {
-        Vector3(0.0, 0.0, 0.0)
+        Self(0.0, 0.0, 0.0)
     }
 
     pub fn from_random() -> Self {
-        Vector3(random_double(), random_double(), random_double())
+        Self(random_double(), random_double(), random_double())
     }
 
     pub fn from_interval_random(i: Range<f64>) -> Self {
-        Vector3(random_interval(i.clone()), random_interval(i.clone()), random_interval(i.clone()))
+        Self(random_interval(i.clone()), random_interval(i.clone()), random_interval(i.clone()))
     }
 
     pub fn from_random_in_unit_sphere() -> Self {
         loop {
-            let candi = Vector3::from_random();
+            let candi = Self::from_random();
             if candi.length_square() <= 1.0 {
                 return candi
             }
