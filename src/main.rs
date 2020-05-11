@@ -22,6 +22,7 @@ use physics::{
 };
 
 
+#[allow(unused_imports)]
 use model::{Sphere, Plane};
 
 
@@ -80,7 +81,8 @@ fn main() {
     //world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), 1.0, Arc::from(Lambertian::new(Vector3(0.5, 0.5, 0.5)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3)))) ));
-    world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3::new(0.5)))) ));
+    world.add(Arc::from( Sphere::new(Vector3(-1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3(0.8, 0.6, 0.2), 0.8))) ));
+    world.add(Arc::from( Sphere::new(Vector3(1.0, 0.0, -1.0), 0.5, Arc::from(Metal::new(Vector3::new(0.8), 0.0))) ));
 
     let world_shared = Arc::from(world);
 

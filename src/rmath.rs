@@ -15,10 +15,12 @@ use std::f64::consts::PI;
 
 use rand::Rng;
 
+#[allow(dead_code)]
 pub fn deg_to_rad(deg: f64) -> f64 {
     deg * std::f64::consts::PI / 180.0
 }
 
+#[allow(dead_code)]
 pub fn rad_to_deg(rad: f64) -> f64 {
     rad * 180.0 / std::f64::consts::PI
 }

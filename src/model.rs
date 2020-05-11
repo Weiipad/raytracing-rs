@@ -60,6 +60,7 @@ pub struct Plane {
 }
 
 impl Plane {
+    #[allow(dead_code)]
     pub fn new(normal: Vector3, offset: f64, material: Arc<dyn Material>) -> Self {
         Plane {
             normal, offset, mat_ptr: material.clone()
