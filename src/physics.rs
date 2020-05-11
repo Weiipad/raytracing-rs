@@ -3,6 +3,7 @@ use std::{
         Range,
     },
     sync::Arc,
+    rc::Rc,
 };
 
 use crate::rmath::Vector3;
@@ -32,12 +33,13 @@ impl Ray {
     }
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct HitRecord {
     pub p: Vector3,
     pub normal: Vector3,
     pub t: f64,
     pub front_face: bool,
+    pub mat_ptr: Option<Rc<dyn Material>>,
 }
 
 impl HitRecord {
@@ -56,6 +58,10 @@ pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_range: Range<f64>, hit_record: &mut HitRecord) -> bool;
 }
 
+pub trait Material {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool;
+}
+
 #[derive(Clone)]
 pub struct HittableList {
     objects: Vec<Arc<dyn Hittable>>
@@ -71,10 +77,6 @@ impl HittableList {
     pub fn add(&mut self, obj: Arc<dyn Hittable>) {
         self.objects.push(obj)
     }
-
-    pub fn clear(&mut self) {
-        self.objects.clear()
-    }
 }
 
 impl Hittable for HittableList {
@@ -86,7 +88,7 @@ impl Hittable for HittableList {
             if object.hit(r, t_range.start..closet_so_far, &mut temp_rec) {
                 hits_anything = true;
                 closet_so_far = temp_rec.t;
-                *rec = temp_rec;
+                *rec = temp_rec.clone();
             }
         }
         hits_anything

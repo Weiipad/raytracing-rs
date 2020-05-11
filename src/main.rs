@@ -66,12 +66,12 @@ fn main() {
     let hh = height / 2;
     
     let samples_per_pixel = 100;
-    let max_depth = 50;
+    let max_depth = 10;
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
     //world.add(Arc::from(Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0)));
-    world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 1.1)));
+    world.add(Arc::from(Plane::new(Vector3(0.0, 1.0, 0.0), 0.5)));
     world.add(Arc::from(Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5)));
 
     let world_shared = Arc::from(world);

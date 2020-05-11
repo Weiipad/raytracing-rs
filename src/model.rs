@@ -72,6 +72,5 @@ impl Hittable for Plane {
         } else {
             false
         }
-        
     }
 }
