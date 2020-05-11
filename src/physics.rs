@@ -3,7 +3,6 @@ use std::{
         Range,
     },
     sync::Arc,
-    rc::Rc,
 };
 
 use crate::rmath::Vector3;
@@ -36,10 +35,9 @@ impl Ray {
 #[derive(Clone, Default)]
 pub struct HitRecord {
     pub p: Vector3,
-    pub normal: Vector3,
     pub t: f64,
     pub front_face: bool,
-    pub mat_ptr: Option<Rc<dyn Material>>,
+    pub normal: Vector3,
 }
 
 impl HitRecord {
@@ -52,10 +50,21 @@ impl HitRecord {
             -outward_normal
         }
     }
+
+    #[inline]
+    pub fn get_face_normal(r: &Ray, outward_normal: Vector3) -> (bool, Vector3) {
+        let front_face = r.get_direction().dot(outward_normal) < 0.0;
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
+        (front_face, normal)
+    }
 }
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, r: &Ray, t_range: Range<f64>, hit_record: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord>;
 }
 
 pub trait Material {
@@ -80,18 +89,16 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_range: Range<f64>, rec: &mut HitRecord) -> bool {
-        let mut temp_rec: HitRecord = Default::default();
-        let mut hits_anything = false;
+    fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord> {
+        let mut rec = None;
         let mut closet_so_far = t_range.end;
         for object in &self.objects {
-            if object.hit(r, t_range.start..closet_so_far, &mut temp_rec) {
-                hits_anything = true;
+            if let Some(temp_rec) = object.hit(r, t_range.start..closet_so_far) {
                 closet_so_far = temp_rec.t;
-                *rec = temp_rec.clone();
+                rec = Some(temp_rec);
             }
         }
-        hits_anything
+        rec
     }
 }
 

@@ -21,7 +21,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_range: Range<f64>, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord> {
         let oc = r.get_origin() - self.center;
         let a = r.get_direction().length_square();
         let h = oc.dot(r.get_direction());
@@ -31,20 +31,20 @@ impl Hittable for Sphere {
             let root = f64::sqrt(delta);
             let mut t = (-h - root) / a;
             if t_range.contains(&t) {
-                rec.t = t;
-                rec.p = r.at(t);
-                rec.set_face_normal(&r, (rec.p - self.center) / self.r);
-                return true
+                let p = r.at(t);
+                let (front_face, normal) = HitRecord::get_face_normal(r, (p - self.center) / self.r);
+                let rec = HitRecord { p, t, front_face, normal };
+                return Some(rec)
             }
             t = (-h + root) / a;
             if t_range.contains(&t) {
-                rec.t = t;
-                rec.p = r.at(t);
-                rec.set_face_normal(&r, (rec.p - self.center) / self.r);
-                return true
+                let p = r.at(t);
+                let (front_face, normal) = HitRecord::get_face_normal(r, (p - self.center) / self.r);
+                let rec = HitRecord { p, t, front_face, normal };
+                return Some(rec)
             }
         }
-        false
+        None
     }
 }
 
@@ -62,15 +62,12 @@ impl Plane {
 }
 
 impl Hittable for Plane {
-    fn hit(&self, r: &Ray, t_range: Range<f64>, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord> {
         let t = (-self.offset - r.get_origin().dot(self.normal)) / r.get_direction().dot(self.normal);
         if t_range.contains(&t) {
-            rec.t = t;
-            rec.p = r.at(t);
-            rec.normal = self.normal;
-            true
+            Some(HitRecord { p: r.at(t), t, front_face: true, normal: self.normal })
         } else {
-            false
+            None
         }
     }
 }
