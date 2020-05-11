@@ -34,17 +34,13 @@ use std::{
     },
 };
 
+fn gamma_correction(x: f64) -> f64 {
+    f64::sqrt(x)
+}
+
 fn write_color(pixcolor: &Vector3, samples_per_pixel: u32) -> image::Rgb<u8> {
-    let mut r = pixcolor.x();
-    let mut g = pixcolor.y();
-    let mut b = pixcolor.z();
-
     let scale = 1.0 / samples_per_pixel as f64;
-    r = f64::sqrt(r * scale);
-    g = f64::sqrt(g * scale);
-    b = f64::sqrt(b * scale);
-
-    Vector3(clamp(r, 0.0, 0.999), clamp(g, 0.0, 0.999), clamp(b, 0.0, 0.999)).into_rgb()
+    pixcolor.map(move|x| clamp(gamma_correction(x * scale), 0.0, 0.999)).into_rgb()
 }
 
 // every elements in color vector are in [0, 1]
@@ -53,12 +49,15 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vector3 {
         return Vector3::zero()
     }
 
+    // Detects if the ray hit the objects 
     if let Some(rec) = world.hit(r, 0.001..INFINITY) {
+        // if hits the surface, emit a new ray (to get color)
         if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec) {
             return attenuation.mul_one_by_one(ray_color(&scattered, world, depth - 1))
         }
         return Vector3::zero()
     }
+
     let unit_dir = r.get_direction().unit();
     let t = 0.5 * (unit_dir.y() + 1.0);
     (1.0 - t) * Vector3(1.0, 1.0, 1.0) + t * Vector3(0.5, 0.7, 1.0)
@@ -71,7 +70,7 @@ fn main() {
     let height = (width as f64 * ratio) as u32;
 
     let hw = width / 4;
-    let hh = height / 2;
+    let hh = height / 4;
     
     let samples_per_pixel = 100;
     let max_depth = 10;
@@ -91,7 +90,9 @@ fn main() {
     let imgbuf = Arc::from(Mutex::from(image::RgbImage::new(width, height)));
 
     let mut threads = Vec::new();
-    for i in 0..2 {
+
+    let start_time = std::time::SystemTime::now();
+    for i in 0..4 {
         for j in 0..4 {
             let img = imgbuf.clone();
             let cam = cam_shared.clone();
@@ -118,7 +119,8 @@ fn main() {
     for h in threads {
         h.join().unwrap();
     }
-
+    
+    println!("Time elapsed: {:?}", start_time.elapsed().unwrap());
 
     imgbuf.lock().unwrap().save("test.png").unwrap();
 }

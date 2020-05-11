@@ -92,6 +92,11 @@ impl Vector3 {
         self.2
     }
 
+    pub fn map<F>(&self, func: F) -> Vector3
+        where F: Fn(f64) -> f64 {
+        Vector3(func(self.0), func(self.1), func(self.2))
+    }
+
     pub fn length_square(&self) -> f64 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
