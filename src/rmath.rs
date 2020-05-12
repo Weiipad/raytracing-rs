@@ -118,6 +118,13 @@ impl Vector3 {
         *self - 2.0 * self.dot(normal) * normal
     }
 
+    pub fn refract(&self, normal: Vector3, etai_over_etat: f64) -> Vector3 {
+        let cos_theta = self.dot(-normal);
+        let r_out_parallel = etai_over_etat * (*self + cos_theta * normal);
+        let r_out_prep = -f64::sqrt(1.0 - r_out_parallel.length_square()) * normal;
+        r_out_parallel + r_out_prep
+    }
+
     pub fn unit(&self) -> Self {
         *self / self.length()
     }
