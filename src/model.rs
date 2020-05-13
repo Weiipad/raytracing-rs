@@ -75,7 +75,8 @@ impl Hittable for Plane {
         let t = (self.oc - r.get_origin().dot(self.normal)) / r.get_direction().dot(self.normal);
         let p = r.at(t);
         if t_range.contains(&t) {
-            Some(HitRecord { p, t, front_face: true, normal: self.normal, mat_ptr: self.mat_ptr.clone() })
+            let (front_face, normal) = HitRecord::get_face_normal(r, self.normal);
+            Some(HitRecord { p, t, front_face, normal, mat_ptr: self.mat_ptr.clone() })
         } else {
             None
         }

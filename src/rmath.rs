@@ -12,6 +12,7 @@ use std::ops::{
 };
 
 use std::f64::consts::PI;
+use std::fmt;
 
 use rand::Rng;
 
@@ -129,10 +130,6 @@ impl Vector3 {
         *self / self.length()
     }
 
-    pub fn to_string(&self) -> String {
-        format!("[{},{},{}]", self.x(), self.y(), self.z())
-    }
-
     pub fn cos_of_angle(self, other: Vector3) -> f64 {
         self.unit().dot(other.unit())
     }
@@ -229,6 +226,12 @@ impl Neg for Vector3 {
     type Output = Vector3;
     fn neg(self) -> Vector3 {
         Vector3(-self.0, -self.1, -self.2)
+    }
+}
+
+impl fmt::Display for Vector3 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}, {}, {}]", self.0, self.1, self.2)
     }
 }
 

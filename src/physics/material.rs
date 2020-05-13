@@ -77,7 +77,7 @@ impl Material for Dielectric {
         let unit_dir = r_in.get_direction().unit();
         let cos_theta = f64::min(-unit_dir.dot(rec.normal), 1.0);
         let sin_theta = f64::sqrt(1.0 - cos_theta * cos_theta);
-        if etai_over_etat * sin_theta > 1.0 || (/*random_double() < schlick(cos_theta, etai_over_etat) 效果不好*/false) {
+        if etai_over_etat * sin_theta > 1.0 /*|| random_double() < schlick(cos_theta, etai_over_etat)*/ {
             let reflected = unit_dir.reflect(rec.normal);
             Some((Vector3::new(1.0), Ray::new(rec.p, reflected)))
         } else {

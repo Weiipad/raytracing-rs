@@ -80,6 +80,7 @@ fn main() {
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
     world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), -Vector3(0.0, 0.5, 0.0), Arc::from(Metal::new(Vector3::new(0.5), 0.2))) ));
+    //world.add(Arc::from( Plane::new(Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Arc::from(Dielectric::new(1.7))) ));
     //world.add(Arc::from( Sphere::new(Vector3(0.0, -100.5, -1.0), 100.0, Arc::from(Lambertian::new(Vector3(0.8, 0.8, 0.0)))) ));
     world.add(Arc::from( Sphere::new(Vector3(0.0, 0.0, -1.0), 0.5, Arc::from(Lambertian::new(Vector3(0.7, 0.3, 0.3)))) ));
     world.add(Arc::from( Sphere::new(Vector3(-1.0, 0.0, -1.0), 0.5, Arc::from(Dielectric::new(1.7))) ));
