@@ -32,7 +32,7 @@ use std::{
     f64::INFINITY,
     sync::{
         Arc,
-        Mutex
+        mpsc::channel
     },
 };
 
@@ -75,7 +75,7 @@ fn main() {
     let hh = height / 4;
     
     let samples_per_pixel = 100;
-    let max_depth = 100;
+    let max_depth = 200;
 
     // The traverse direction of Rust's Vec is different from C++ std::vector's
     let mut world = HittableList::new();
@@ -89,16 +89,19 @@ fn main() {
 
     let cam_shared = Arc::from(Camera::new(Vector3(-2.0, 2.0, 1.0), Vector3(0.0, 0.0, -1.0), Vector3(0.0, 1.0, 0.0), 45.0, ratio));
 
-    let imgbuf = Arc::from(Mutex::from(image::RgbImage::new(width, height)));
+    let mut img = image::RgbImage::new(width, height);
 
-    let mut threads = Vec::new();
+    let mut threads = vec![];
 
+    let (sender, receiver) = channel();
+      
     let start_time = std::time::SystemTime::now();
     for i in 0..4 {
         for j in 0..4 {
-            let img = imgbuf.clone();
+            let sender = sender.clone();
             let cam = cam_shared.clone();
             let world = world_shared.clone();
+
             let handle = std::thread::spawn(move || {    
                 for y in i*hh..(i+1)*hh {
                     for x in j*hw..(j+1)*hw {
@@ -109,20 +112,22 @@ fn main() {
                             let ray = cam.get_ray(u, v);
                             pixcolor += ray_color(&ray, &world, max_depth);
                         }
-                        let mut img = img.lock().unwrap();
-                        img.put_pixel(x, y, write_color(&pixcolor, samples_per_pixel));
+                        sender.send((x, y, write_color(&pixcolor, samples_per_pixel))).unwrap();
                     }
                 }
+                drop(sender);
             });
             threads.push(handle)
         }
     }
 
-    for h in threads {
-        h.join().unwrap();
+    drop(sender);
+
+    while let Ok((x, y, pixel)) = receiver.recv() {
+        img.put_pixel(x, y, pixel);
     }
     
     println!("Time elapsed: {:?}", start_time.elapsed().unwrap_or_default());
 
-    imgbuf.lock().unwrap().save("test.png").unwrap();
+    img.save("test.png").unwrap();
 }

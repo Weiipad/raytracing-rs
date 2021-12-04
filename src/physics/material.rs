@@ -1,4 +1,4 @@
-use crate::rmath::{Vector3, random_double};
+use crate::rmath::{Vector3};
 use super::*;
 
 pub trait Material: Send + Sync {
